@@ -35,13 +35,10 @@ import {
   LinkIcon,
   Copy,
   ExternalLink,
-  BarChart3,
-  Settings,
   LogOut,
   Plus,
   Eye,
   Calendar,
-  TrendingUp,
   MousePointer,
 } from "lucide-react";
 
