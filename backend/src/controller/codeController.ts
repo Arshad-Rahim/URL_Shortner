@@ -45,7 +45,6 @@ export class CodeController {
         shortCode: urlData.shortCode,
         clicks: urlData.clicks || 0,
         createdAt: urlData.createdAt.toISOString().split("T")[0],
-        isActive: urlData.isActive,
       };
 
       res.status(HTTP_STATUS.CREATED).json({
@@ -100,7 +99,6 @@ export class CodeController {
         shortCode: url.shortCode,
         clicks: url.clicks || 0,
         createdAt: url.createdAt,
-        isActive: url.isActive,
       }));
 
       res.status(HTTP_STATUS.OK).json({
@@ -136,7 +134,7 @@ export class CodeController {
       }
 
       const url = await this._codeService.findUrlByShortCode(shortCode);
-      if (!url || url.isActive === false) {
+      if (!url ) {
         throw new CustomError(
           ERROR_MESSAGES.URL_NOT_FOUND,
           HTTP_STATUS.NOT_FOUND
@@ -183,7 +181,7 @@ export class CodeController {
       }
 
       const url = await this._codeService.findUrlByShortCode(shortCode);
-      if (!url || url.isActive === false || url.userId !== userId) {
+      if (!url || url.userId !== userId) {
         throw new CustomError(
           ERROR_MESSAGES.URL_NOT_FOUND,
           HTTP_STATUS.NOT_FOUND
@@ -197,7 +195,6 @@ export class CodeController {
         shortCode: url.shortCode,
         clicks: url.clicks || 0,
         createdAt: url.createdAt.toISOString().split("T")[0],
-        isActive: url.isActive,
       };
 
       res.status(HTTP_STATUS.OK).json({

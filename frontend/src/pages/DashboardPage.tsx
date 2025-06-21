@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {  useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "@/redux/slice/userSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -51,7 +50,6 @@ interface ShortenedUrl {
   shortCode: string;
   clicks: number;
   createdAt: string;
-  isActive: boolean;
 }
 
 interface User {
@@ -151,7 +149,6 @@ export default function DashboardPage() {
           shortCode: url.shortCode,
           clicks: url.clicks || 0,
           createdAt: new Date(url.createdAt).toISOString().split("T")[0],
-          isActive: url.isActive,
         }));
 
         setUrls((prevUrls) => {
@@ -163,8 +160,7 @@ export default function DashboardPage() {
                 prev.originalUrl === mappedUrls[i].originalUrl &&
                 prev.shortUrl === mappedUrls[i].shortUrl &&
                 prev.clicks === mappedUrls[i].clicks &&
-                prev.createdAt === mappedUrls[i].createdAt &&
-                prev.isActive === mappedUrls[i].isActive
+                prev.createdAt === mappedUrls[i].createdAt
             );
           return isSame ? prevUrls : mappedUrls;
         });
@@ -250,14 +246,12 @@ export default function DashboardPage() {
           shortCode: newUrl.shortCode,
           clicks: newUrl.clicks || 0,
           createdAt: new Date(newUrl.createdAt).toISOString().split("T")[0],
-          isActive: newUrl.isActive,
         },
         ...prev,
       ]);
       setOriginalUrl("");
       setCustomAlias("");
       setAlert({ type: "success", message: "URL shortened successfully!" });
-      // Refresh URLs to ensure pagination reflects new URL
       fetchUrls(page);
     } catch (error: any) {
       setAlert({
@@ -303,7 +297,6 @@ export default function DashboardPage() {
   };
 
   const totalClicks = urls.reduce((sum, url) => sum + url.clicks, 0);
-  const activeUrls = urls.filter((url) => url.isActive).length;
 
   if (!user) {
     return <div>Loading...</div>;
@@ -374,9 +367,6 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalUrls}</div>
-              <p className="text-xs text-muted-foreground">
-                {activeUrls} active
-              </p>
             </CardContent>
           </Card>
 
@@ -460,7 +450,6 @@ export default function DashboardPage() {
                     <TableHead>Short URL</TableHead>
                     <TableHead>Clicks</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -502,11 +491,6 @@ export default function DashboardPage() {
                           <Calendar className="h-4 w-4 text-gray-400" />
                           <span>{url.createdAt}</span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={url.isActive ? "default" : "secondary"}>
-                          {url.isActive ? "Active" : "Inactive"}
-                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">

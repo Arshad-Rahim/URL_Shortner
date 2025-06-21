@@ -14,7 +14,7 @@ export class CodeRepository implements ICodeRepository {
     limit: number = 5
   ): Promise<{ urls: TCode[]; total: number }> {
     const skip = (page - 1) * limit;
-    const urls = await codeModel.find({ userId }).skip(skip).limit(limit);
+    const urls = await codeModel.find({ userId }).sort({createdAt:-1}).skip(skip).limit(limit);
     const total = await codeModel.countDocuments({ userId });
     return { urls, total };
   }

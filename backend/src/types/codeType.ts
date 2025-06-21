@@ -12,6 +12,5 @@ export type TCode = {
   longUrl: string;
   shortCode: string;
   clicks: number;
-  isActive: boolean;
   createdAt: Date;
 };
