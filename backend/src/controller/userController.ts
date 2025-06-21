@@ -1,5 +1,6 @@
 import { IUserService } from "@/interfaces/serviceInterfaces/IUserService";
 import { ITokenService } from "@/interfaces/tokenServiceInterface/tokenServiceInterface";
+import { CustomRequest } from "@/middleware/authMiddleware";
 import { ERROR_MESSAGES, HTTP_STATUS, SUCCESS_MESSAGES } from "@/shared/constant";
 import { setAuthCookies } from "@/utils/cookieHelper";
 import { CustomError } from "@/utils/customError";
@@ -68,6 +69,27 @@ export class UserController{
           message:SUCCESS_MESSAGES.LOGIN_SUCCESS,
           user:{id:user?._id,name:user?.name,email:user?.email}
         })
+        
+      } catch (error) {
+        if (error instanceof CustomError) {
+          res
+            .status(error.statusCode)
+            .json({ success: false, message: error.message });
+          return;
+        }
+        console.log(error);
+        res
+          .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+          .json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
+      }
+    }
+
+
+    async logoutUser(req:Request,res:Response){
+      try {
+        res.clearCookie('accessToken');
+      (req as CustomRequest).user = undefined;
+      res.status(HTTP_STATUS.OK).json({ message: SUCCESS_MESSAGES.LOGIN_SUCCESS });
         
       } catch (error) {
         if (error instanceof CustomError) {

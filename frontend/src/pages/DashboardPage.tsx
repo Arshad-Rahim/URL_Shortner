@@ -86,7 +86,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!userDatas) {
-      console.log("USER DATAAAAA", userDatas);
       navigate("/login");
       return;
     }
@@ -231,7 +230,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3000/api/logout", {
+      await fetch("http://localhost:3000/logout", {
         method: "POST",
         credentials: "include",
       });

@@ -27,6 +27,10 @@ export class Routes{
           (req: Request, res: Response) =>
             injectedUserController.loginUser(req, res)
         );
+
+        this.router.post("/logout", (req: Request, res: Response) =>
+          injectedUserController.logoutUser(req, res)
+        );
     }
 
 }
