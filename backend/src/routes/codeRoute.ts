@@ -29,7 +29,6 @@ export class CodeRoutes {
         injectedCodeController.getUrlDetails(req, res)
     );
 
-    // New route for handling shortened URL redirection
     this.router.get("/:shortCode", (req: Request, res: Response) =>
       injectedCodeController.redirectUrl(req, res)
     );

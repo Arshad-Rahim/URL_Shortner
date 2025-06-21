@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import {  useDispatch, useSelector } from "react-redux";
 import { removeUser } from "@/redux/slice/userSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,8 @@ import {
   Eye,
   Calendar,
   MousePointer,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface ShortenedUrl {
@@ -80,6 +82,11 @@ export default function DashboardPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUrls, setTotalUrls] = useState(0);
+  const limit = 5;
 
   useEffect(() => {
     if (!userDatas) {
@@ -90,59 +97,99 @@ export default function DashboardPage() {
     setUser({ name: userDatas.name, email: userDatas.email });
   }, [navigate, userDatas]);
 
-  useEffect(() => {
-    const fetchUrls = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/code/urlDatas", {
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch URL data");
-        }
-        const data = await response.json();
-        if (data.success && Array.isArray(data.urlDatas)) {
-          const mappedUrls: ShortenedUrl[] = data.urlDatas.map((url: any) => ({
-            id: url._id.toString(),
-            originalUrl: url.longUrl,
-            shortUrl: `http://localhost:3000/${url.shortCode}`,
-            shortCode: url.shortCode,
-            clicks: url.clicks || 0,
-            createdAt: new Date(url.createdAt).toISOString().split("T")[0],
-            isActive: url.isActive,
-          }));
+  const refreshToken = async () => {
+    if (isRefreshing) return false;
+    setIsRefreshing(true);
 
-          setUrls((prevUrls) => {
-            const isSame =
-              prevUrls.length === mappedUrls.length &&
-              prevUrls.every(
-                (prev, i) =>
-                  prev.id === mappedUrls[i].id &&
-                  prev.originalUrl === mappedUrls[i].originalUrl &&
-                  prev.shortUrl === mappedUrls[i].shortUrl &&
-                  prev.clicks === mappedUrls[i].clicks &&
-                  prev.createdAt === mappedUrls[i].createdAt &&
-                  prev.isActive === mappedUrls[i].isActive
-              );
-            return isSame ? prevUrls : mappedUrls;
-          });
-        } else {
-          throw new Error(data.message || "Invalid response from server");
-        }
-      } catch (error: any) {
-        console.error("Error fetching URLs:", error);
-        setAlert({
-          type: "error",
-          message: error.message || "Failed to fetch URLs",
-        });
-        setTimeout(() => setAlert(null), 3000);
+    try {
+      const response = await fetch("http://localhost:3000/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to refresh token");
       }
-    };
 
-    if (userDatas) {
-      fetchUrls();
+      setIsRefreshing(false);
+      return true;
+    } catch (error) {
+      setIsRefreshing(false);
+      dispatch(removeUser());
+      navigate("/login");
+      return false;
     }
-  }, [userDatas]);
+  };
 
+  const fetchUrls = async (pageNum: number, retry = true) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/code/urlDatas?page=${pageNum}&limit=${limit}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (response.status === 401 && retry) {
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          return fetchUrls(pageNum, false);
+        }
+        throw new Error("Unauthorized");
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch URL data");
+      }
+
+      const data = await response.json();
+      if (data.success && Array.isArray(data.urlDatas)) {
+        const mappedUrls: ShortenedUrl[] = data.urlDatas.map((url: any) => ({
+          id: url._id.toString(),
+          originalUrl: url.longUrl,
+          shortUrl: `http://localhost:3000/${url.shortCode}`,
+          shortCode: url.shortCode,
+          clicks: url.clicks || 0,
+          createdAt: new Date(url.createdAt).toISOString().split("T")[0],
+          isActive: url.isActive,
+        }));
+
+        setUrls((prevUrls) => {
+          const isSame =
+            prevUrls.length === mappedUrls.length &&
+            prevUrls.every(
+              (prev, i) =>
+                prev.id === mappedUrls[i].id &&
+                prev.originalUrl === mappedUrls[i].originalUrl &&
+                prev.shortUrl === mappedUrls[i].shortUrl &&
+                prev.clicks === mappedUrls[i].clicks &&
+                prev.createdAt === mappedUrls[i].createdAt &&
+                prev.isActive === mappedUrls[i].isActive
+            );
+          return isSame ? prevUrls : mappedUrls;
+        });
+
+        setTotalUrls(data.total);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+      } else {
+        throw new Error(data.message || "Invalid response from server");
+      }
+    } catch (error: any) {
+      console.error("Error fetching URLs:", error);
+      setAlert({
+        type: "error",
+        message: error.message || "Failed to fetch URLs",
+      });
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
+  useEffect(() => {
+    if (userDatas) {
+      fetchUrls(page);
+    }
+  }, [userDatas, page]);
 
   const handleShortenUrl = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -181,6 +228,14 @@ export default function DashboardPage() {
         credentials: "include",
       });
 
+      if (response.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          return handleShortenUrl(e);
+        }
+        throw new Error("Unauthorized");
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to shorten URL");
@@ -202,6 +257,8 @@ export default function DashboardPage() {
       setOriginalUrl("");
       setCustomAlias("");
       setAlert({ type: "success", message: "URL shortened successfully!" });
+      // Refresh URLs to ensure pagination reflects new URL
+      fetchUrls(page);
     } catch (error: any) {
       setAlert({
         type: "error",
@@ -236,6 +293,12 @@ export default function DashboardPage() {
     } catch {
       dispatch(removeUser());
       navigate("/");
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
     }
   };
 
@@ -310,7 +373,7 @@ export default function DashboardPage() {
               <LinkIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{urls.length}</div>
+              <div className="text-2xl font-bold">{totalUrls}</div>
               <p className="text-xs text-muted-foreground">
                 {activeUrls} active
               </p>
@@ -456,7 +519,6 @@ export default function DashboardPage() {
                               <ExternalLink className="h-4 w-4" />
                             </a>
                           </Button>
-                       
                         </div>
                       </TableCell>
                     </TableRow>
@@ -474,6 +536,32 @@ export default function DashboardPage() {
                 <p className="text-gray-500">
                   Create your first shortened URL using the form above.
                 </p>
+              </div>
+            )}
+
+            {totalUrls > limit && (
+              <div className="flex justify-between items-center mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             )}
           </CardContent>

@@ -78,12 +78,38 @@ export class CodeController {
         );
       }
 
-      const urlDatas = await this._codeService.getUrl(userId);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 5;
+
+      if (page < 1 || limit < 1) {
+        throw new CustomError(
+          "Page and limit must be positive integers",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const { urls, total } = await this._codeService.getUrl(
+        userId,
+        page,
+        limit
+      );
+
+      const urlDatas = urls.map((url) => ({
+        _id: url._id.toString(),
+        longUrl: url.longUrl,
+        shortCode: url.shortCode,
+        clicks: url.clicks || 0,
+        createdAt: url.createdAt,
+        isActive: url.isActive,
+      }));
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
         message: SUCCESS_MESSAGES.DATA_RETRIEVED_SUCCESS,
         urlDatas,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
       });
     } catch (error) {
       if (error instanceof CustomError) {
@@ -117,7 +143,6 @@ export class CodeController {
         );
       }
 
-      // Validate longUrl
       try {
         new URL(url.longUrl);
       } catch {

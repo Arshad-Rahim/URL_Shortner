@@ -10,9 +10,17 @@ export class CodeService implements ICodeService {
     return urlData;
   }
 
-  async getUrl(userId: string): Promise<TCode[]> {
-    const urlDatas = await this._codeRepository.getUrl(userId);
-    return urlDatas;
+  async getUrl(
+    userId: string,
+    page: number = 1,
+    limit: number = 5
+  ): Promise<{ urls: TCode[]; total: number }> {
+    const { urls, total } = await this._codeRepository.getUrl(
+      userId,
+      page,
+      limit
+    );
+    return { urls, total };
   }
 
   async findUrlByShortCode(shortCode: string): Promise<TCode | null> {

@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import codeRoute from "./routes/codeRoute";
 import rateLimit from "express-rate-limit";
 import { injectedCodeController } from "@/di/codeInjection";
+import { ERROR_MESSAGES } from "./shared/constant";
 
 dotenv.config();
 
@@ -27,9 +28,20 @@ const redirectLimiter = rateLimit({
   max: 100, // 100 requests per IP
   message: {
     success: false,
-    message: "Too many requests, please try again later",
+    message: ERROR_MESSAGES.TOO_MANY_REQUESTS
   },
 });
+
+// Rate limiter for authentication routes
+const authLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10, // 10 requests per IP
+  message: {
+    success: false,
+    message: ERROR_MESSAGES.TOO_MANY_REQUESTS,
+  },
+});
+
 
 // Redirect route for shortened URLs
 app.get("/:shortCode", redirectLimiter, (req, res) => {
@@ -37,7 +49,7 @@ app.get("/:shortCode", redirectLimiter, (req, res) => {
 });
 
 // Routes
-app.use("/", Routes);
+app.use("/",authLimiter,Routes);
 app.use("/code", codeRoute);
 
 app.listen(PORT, () => {

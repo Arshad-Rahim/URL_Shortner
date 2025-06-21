@@ -14,6 +14,7 @@ export enum HTTP_STATUS {
 
   
   export const SUCCESS_MESSAGES = {
+    TOKEN_REFRESHED:"Token refreshed",
     OPERATION_SUCCESS: "Opearation Succesfull",
     CREATED: "Created successfully.",
     LOGIN_SUCCESS: "Login successful.",
@@ -26,6 +27,9 @@ export enum HTTP_STATUS {
   };
 
   export const ERROR_MESSAGES = {
+    TOO_MANY_REQUESTS:"Too many requests, please try again later",
+    INVALID_REFRESH_TOKEN:"Invalid refresh token",
+    REFRESH_TOKEN_REQUIRED:'Refresh token is required',
     SHORT_CODE_EXISTS:"Short code alredy exist",
     INVALID_SHORT_CODE:"Invalid short code",
     INVALID_URL:"Invalid URL",

@@ -66,9 +66,8 @@ export default function LoginPage() {
         throw new Error(message);
       }
 
-      const { user, accessToken } = await response.json();
+      const { user } = await response.json();
       dispatch(addUser(user));
-      localStorage.setItem("accessToken", accessToken); // Store accessToken
       setIsLoading(false);
       navigate("/dashboard");
     } catch (error: any) {
@@ -87,7 +86,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <LinkIcon className="h-8 w-8 text-blue-600" />
@@ -104,7 +102,6 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
@@ -123,7 +120,6 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -157,19 +153,16 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Server Error */}
               {errors.server && (
                 <p className="text-sm text-red-500 text-center">
                   {errors.server}
                 </p>
               )}
 
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
-
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">

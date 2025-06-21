@@ -8,9 +8,15 @@ export class CodeRepository implements ICodeRepository {
     return urlData;
   }
 
-  async getUrl(userId: string): Promise<TCode[]> {
-    const urlDatas = await codeModel.find({ userId });
-    return urlDatas;
+  async getUrl(
+    userId: string,
+    page: number = 1,
+    limit: number = 5
+  ): Promise<{ urls: TCode[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const urls = await codeModel.find({ userId }).skip(skip).limit(limit);
+    const total = await codeModel.countDocuments({ userId });
+    return { urls, total };
   }
 
   async findUrlByShortCode(shortCode: string): Promise<TCode | null> {
