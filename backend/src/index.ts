@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./config/connectDB";
 import Routes from "./routes/userRoute";
+
+dotenv.config();
+
 import { corsOptions } from "./middleware/corsOptionConfiguration";
 import cookieParser from "cookie-parser";
 import codeRoute from "./routes/codeRoute";
@@ -10,7 +13,7 @@ import rateLimit from "express-rate-limit";
 import { injectedCodeController } from "@/di/codeInjection";
 import { ERROR_MESSAGES } from "./shared/constant";
 
-dotenv.config();
+
 
 connectDB();
 
