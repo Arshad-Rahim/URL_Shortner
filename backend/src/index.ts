@@ -7,6 +7,7 @@ import Routes from "./routes/userRoute";
 dotenv.config();
 
 import { corsOptions } from "./middleware/corsOptionConfiguration";
+console.log(corsOptions)
 import cookieParser from "cookie-parser";
 import codeRoute from "./routes/codeRoute";
 import rateLimit from "express-rate-limit";
