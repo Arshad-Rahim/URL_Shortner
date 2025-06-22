@@ -100,7 +100,7 @@ export default function DashboardPage() {
     setIsRefreshing(true);
 
     try {
-      const response = await fetch("http://localhost:3000/refresh", {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/refresh`, {
         method: "POST",
         credentials: "include",
       });
@@ -122,7 +122,7 @@ export default function DashboardPage() {
   const fetchUrls = async (pageNum: number, retry = true) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/code/urlDatas?page=${pageNum}&limit=${limit}`,
+        `${import.meta.env.BASE_URL}/code/urlDatas?page=${pageNum}&limit=${limit}`,
         {
           credentials: "include",
         }
@@ -145,7 +145,7 @@ export default function DashboardPage() {
         const mappedUrls: ShortenedUrl[] = data.urlDatas.map((url: any) => ({
           id: url._id.toString(),
           originalUrl: url.longUrl,
-          shortUrl: `http://localhost:3000/${url.shortCode}`,
+          shortUrl: `${import.meta.env.BASE_URL}/${url.shortCode}`,
           shortCode: url.shortCode,
           clicks: url.clicks || 0,
           createdAt: new Date(url.createdAt).toISOString().split("T")[0],
@@ -211,7 +211,7 @@ export default function DashboardPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/code/shorten", {
+      const response = await fetch(`${import.meta.env.BASE_URL}/code/shorten`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -278,7 +278,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3000/logout", {
+      await fetch(`${import.meta.env.BASE_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });

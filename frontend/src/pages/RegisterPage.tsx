@@ -60,16 +60,19 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/register/user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}/register/user`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+          }),
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         const { message } = await response.json();
