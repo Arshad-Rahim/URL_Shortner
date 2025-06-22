@@ -122,7 +122,9 @@ export default function DashboardPage() {
   const fetchUrls = async (pageNum: number, retry = true) => {
     try {
       const response = await fetch(
-        `${import.meta.env.BASE_URL}/code/urlDatas?page=${pageNum}&limit=${limit}`,
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/code/urlDatas?page=${pageNum}&limit=${limit}`,
         {
           credentials: "include",
         }
@@ -145,7 +147,7 @@ export default function DashboardPage() {
         const mappedUrls: ShortenedUrl[] = data.urlDatas.map((url: any) => ({
           id: url._id.toString(),
           originalUrl: url.longUrl,
-          shortUrl: `${import.meta.env.BASE_URL}/${url.shortCode}`,
+          shortUrl: `${import.meta.env.VITE_BASE_URL}/${url.shortCode}`,
           shortCode: url.shortCode,
           clicks: url.clicks || 0,
           createdAt: new Date(url.createdAt).toISOString().split("T")[0],
@@ -211,18 +213,21 @@ export default function DashboardPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}/code/shorten`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          originalUrl,
-          customAlias,
-          userId: userDatas._id,
-        }),
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/code/shorten`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            originalUrl,
+            customAlias,
+            userId: userDatas._id,
+          }),
+          credentials: "include",
+        }
+      );
 
       if (response.status === 401) {
         const refreshed = await refreshToken();
@@ -278,7 +283,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${import.meta.env.BASE_URL}/logout`, {
+      await fetch(`${import.meta.env.VITE_BASE_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });

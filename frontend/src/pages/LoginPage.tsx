@@ -51,7 +51,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}/login`, {
+      console.log("BASE URL IN FRONT", import.meta.env.VITE_BASE_URL);
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

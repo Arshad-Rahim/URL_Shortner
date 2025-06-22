@@ -61,7 +61,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.BASE_URL}/register/user`,
+        `${import.meta.env.VITE_BASE_URL}/register/user`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
