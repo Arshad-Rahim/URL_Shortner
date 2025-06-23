@@ -12,19 +12,19 @@ export class CodeRoutes {
   initializeRoutes() {
     this.router.post(
       "/shorten",
-      authMiddleware,
+      // authMiddleware,
       (req: Request, res: Response) => injectedCodeController.addUrl(req, res)
     );
 
     this.router.get(
       "/urlDatas",
-      authMiddleware,
+      // authMiddleware,
       (req: Request, res: Response) => injectedCodeController.getUrl(req, res)
     );
 
     this.router.get(
       "/api/urls/:shortCode",
-      authMiddleware,
+      // authMiddleware,
       (req: Request, res: Response) =>
         injectedCodeController.getUrlDetails(req, res)
     );
