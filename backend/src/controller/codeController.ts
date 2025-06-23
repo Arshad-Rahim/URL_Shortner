@@ -41,7 +41,7 @@ export class CodeController {
       const responseData = {
         id: urlData._id.toString(),
         originalUrl: urlData.longUrl,
-        shortUrl: `http://localhost:3000/${urlData.shortCode}`,
+        shortUrl: `${process.env.BASE_URL}/${urlData.shortCode}`,
         shortCode: urlData.shortCode,
         clicks: urlData.clicks || 0,
         createdAt: urlData.createdAt.toISOString().split("T")[0],
@@ -191,7 +191,7 @@ export class CodeController {
       const responseData = {
         id: url._id.toString(),
         originalUrl: url.longUrl,
-        shortUrl: `http://localhost:3000/${url.shortCode}`,
+        shortUrl: `${process.env.BASE_URL}/${url.shortCode}`,
         shortCode: url.shortCode,
         clicks: url.clicks || 0,
         createdAt: url.createdAt.toISOString().split("T")[0],
