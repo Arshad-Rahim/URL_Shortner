@@ -52,11 +52,18 @@ export class CodeController {
         message: SUCCESS_MESSAGES.CREATED,
         ...responseData,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof CustomError) {
         res
           .status(error.statusCode)
           .json({ success: false, message: error.message });
+        return;
+      }
+      if (error.code === 11000 && error.keyPattern?.shortCode) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: "Custom alias already exists",
+        });
         return;
       }
       console.error("Add URL error:", error);
@@ -134,7 +141,7 @@ export class CodeController {
       }
 
       const url = await this._codeService.findUrlByShortCode(shortCode);
-      if (!url ) {
+      if (!url) {
         throw new CustomError(
           ERROR_MESSAGES.URL_NOT_FOUND,
           HTTP_STATUS.NOT_FOUND
