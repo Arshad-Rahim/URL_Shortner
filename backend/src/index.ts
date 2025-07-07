@@ -29,7 +29,7 @@ app.use(express.json());
 // Rate limiter for redirection
 const redirectLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per IP
+  max: 1000, // 1000 requests per IP
   message: {
     success: false,
     message: ERROR_MESSAGES.TOO_MANY_REQUESTS,
@@ -39,7 +39,7 @@ const redirectLimiter = rateLimit({
 // Rate limiter for authentication routes
 const authLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // 10 requests per IP
+  max: 100, // 100 requests per IP
   message: {
     success: false,
     message: ERROR_MESSAGES.TOO_MANY_REQUESTS,
