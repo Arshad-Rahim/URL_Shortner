@@ -188,6 +188,11 @@ export default function DashboardPage() {
       fetchUrls(page);
     }
   }, [userDatas, page]);
+  function render(){
+    if (userDatas) {
+      fetchUrls(page);
+    }
+  }
 
   const handleShortenUrl = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -499,7 +504,7 @@ export default function DashboardPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" asChild>
+                          <Button onClick={render} variant="ghost" size="sm" asChild>
                             <a
                               href={url.shortUrl}
                               target="_blank"
