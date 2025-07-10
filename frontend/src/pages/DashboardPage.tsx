@@ -188,11 +188,42 @@ export default function DashboardPage() {
       fetchUrls(page);
     }
   }, [userDatas, page]);
-  function render(){
-    if (userDatas) {
-      fetchUrls(page);
+
+  const incrementClickCount = async (urlId: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/code/increment-click/${urlId}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          return incrementClickCount(urlId);
+        }
+        throw new Error("Failed to increment click count");
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setUrls((prevUrls) =>
+          prevUrls.map((url) =>
+            url.id === urlId ? { ...url, clicks: data.clicks } : url
+          )
+        );
+      }
+    } catch (error: any) {
+      console.error("Error incrementing click count:", error);
+      setAlert({
+        type: "error",
+        message: "Failed to update click count",
+      });
+      setTimeout(() => setAlert(null), 3000);
     }
-  }
+  };
 
   const handleShortenUrl = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -275,15 +306,20 @@ export default function DashboardPage() {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, urlId: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      await incrementClickCount(urlId);
       setAlert({ type: "success", message: "Copied to clipboard!" });
       setTimeout(() => setAlert(null), 2000);
     } catch {
       setAlert({ type: "error", message: "Failed to copy to clipboard" });
       setTimeout(() => setAlert(null), 2000);
     }
+  };
+
+  const handleNavigateClick = async (urlId: string) => {
+    await incrementClickCount(urlId);
   };
 
   const handleLogout = async () => {
@@ -484,7 +520,9 @@ export default function DashboardPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => copyToClipboard(url.shortUrl)}
+                            onClick={() =>
+                              copyToClipboard(url.shortUrl, url.id)
+                            }
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -504,7 +542,12 @@ export default function DashboardPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button onClick={render} variant="ghost" size="sm" asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleNavigateClick(url.id)}
+                            asChild
+                          >
                             <a
                               href={url.shortUrl}
                               target="_blank"
