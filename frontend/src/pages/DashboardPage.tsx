@@ -157,7 +157,7 @@ export default function DashboardPage() {
           shortUrl: `${import.meta.env.VITE_BASE_URL}/${url.shortCode}`,
           shortCode: url.shortCode,
           clicks: url.clicks || 0,
-          createdAt: new Date(url.url.createdAt).toISOString().split("T")[0],
+          createdAt: new Date(url.createdAt).toISOString().split("T")[0],
         }));
 
         setUrls((prevUrls) => {
