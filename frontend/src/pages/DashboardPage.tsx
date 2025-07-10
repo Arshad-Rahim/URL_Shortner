@@ -68,6 +68,23 @@ interface RootState {
   };
 }
 
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -87,6 +104,9 @@ export default function DashboardPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUrls, setTotalUrls] = useState(0);
   const limit = 5;
+
+  // Debounce the search query with a 500ms delay
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     if (!userDatas) {
@@ -192,9 +212,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (userDatas) {
-      fetchUrls(page, searchQuery);
+      fetchUrls(page, debouncedSearchQuery);
     }
-  }, [userDatas, page, searchQuery]);
+  }, [userDatas, page, debouncedSearchQuery]);
 
   const incrementClickCount = async (urlId: string) => {
     try {
@@ -207,10 +227,6 @@ export default function DashboardPage() {
       );
 
       if (!response.ok) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-          return incrementClickCount(urlId);
-        }
         throw new Error("Failed to increment click count");
       }
 
@@ -300,7 +316,7 @@ export default function DashboardPage() {
       setOriginalUrl("");
       setCustomAlias("");
       setAlert({ type: "success", message: "URL shortened successfully!" });
-      fetchUrls(page, searchQuery);
+      fetchUrls(page, debouncedSearchQuery);
     } catch (error: any) {
       setAlert({
         type: "error",
