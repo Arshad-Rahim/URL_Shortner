@@ -86,6 +86,7 @@ export class CodeController {
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 5;
+      const search = (req.query.search as string) || "";
 
       if (page < 1 || limit < 1) {
         throw new CustomError(
@@ -97,7 +98,8 @@ export class CodeController {
       const { urls, total } = await this._codeService.getUrl(
         userId,
         page,
-        limit
+        limit,
+        search
       );
 
       const urlDatas = urls.map((url) => ({

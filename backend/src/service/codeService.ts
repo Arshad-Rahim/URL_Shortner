@@ -13,12 +13,14 @@ export class CodeService implements ICodeService {
   async getUrl(
     userId: string,
     page: number = 1,
-    limit: number = 5
+    limit: number = 5,
+    search: string = ""
   ): Promise<{ urls: TCode[]; total: number }> {
     const { urls, total } = await this._codeRepository.getUrl(
       userId,
       page,
-      limit
+      limit,
+      search
     );
     return { urls, total };
   }

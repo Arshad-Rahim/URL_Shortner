@@ -41,6 +41,7 @@ import {
   MousePointer,
   ChevronLeft,
   ChevronRight,
+  Search,
 } from "lucide-react";
 
 interface ShortenedUrl {
@@ -74,6 +75,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [originalUrl, setOriginalUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [urls, setUrls] = useState<ShortenedUrl[]>([]);
   const [alert, setAlert] = useState<{
@@ -119,12 +121,17 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchUrls = async (pageNum: number, retry = true) => {
+  const fetchUrls = async (
+    pageNum: number,
+    search: string = "",
+    retry = true
+  ) => {
     try {
+      const query = search ? `&search=${encodeURIComponent(search)}` : "";
       const response = await fetch(
         `${
           import.meta.env.VITE_BASE_URL
-        }/code/urlDatas?page=${pageNum}&limit=${limit}`,
+        }/code/urlDatas?page=${pageNum}&limit=${limit}${query}`,
         {
           credentials: "include",
         }
@@ -133,7 +140,7 @@ export default function DashboardPage() {
       if (response.status === 401 && retry) {
         const refreshed = await refreshToken();
         if (refreshed) {
-          return fetchUrls(pageNum, false);
+          return fetchUrls(pageNum, search, false);
         }
         throw new Error("Unauthorized");
       }
@@ -150,7 +157,7 @@ export default function DashboardPage() {
           shortUrl: `${import.meta.env.VITE_BASE_URL}/${url.shortCode}`,
           shortCode: url.shortCode,
           clicks: url.clicks || 0,
-          createdAt: new Date(url.createdAt).toISOString().split("T")[0],
+          createdAt: new Date(url.url.createdAt).toISOString().split("T")[0],
         }));
 
         setUrls((prevUrls) => {
@@ -185,9 +192,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (userDatas) {
-      fetchUrls(page);
+      fetchUrls(page, searchQuery);
     }
-  }, [userDatas, page]);
+  }, [userDatas, page, searchQuery]);
 
   const incrementClickCount = async (urlId: string) => {
     try {
@@ -293,7 +300,7 @@ export default function DashboardPage() {
       setOriginalUrl("");
       setCustomAlias("");
       setAlert({ type: "success", message: "URL shortened successfully!" });
-      fetchUrls(page);
+      fetchUrls(page, searchQuery);
     } catch (error: any) {
       setAlert({
         type: "error",
@@ -340,6 +347,11 @@ export default function DashboardPage() {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1); // Reset to page 1 on search
   };
 
   const totalClicks = urls.reduce((sum, url) => sum + url.clicks, 0);
@@ -488,6 +500,17 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by custom alias..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="pl-8"
+                />
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -568,10 +591,12 @@ export default function DashboardPage() {
               <div className="text-center py-8">
                 <LinkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No URLs yet
+                  {searchQuery ? "No URLs found" : "No URLs yet"}
                 </h3>
                 <p className="text-gray-500">
-                  Create your first shortened URL using the form above.
+                  {searchQuery
+                    ? "No URLs match your search."
+                    : "Create your first shortened URL using the form above."}
                 </p>
               </div>
             )}

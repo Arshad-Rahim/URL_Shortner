@@ -5,7 +5,8 @@ export interface ICodeService {
   getUrl(
     userId: string,
     page?: number,
-    limit?: number
+    limit?: number,
+    search?:string
   ): Promise<{ urls: TCode[]; total: number }>;
   findUrlByShortCode(shortCode: string): Promise<TCode | null>;
   incrementClicks(id: string): Promise<void>;

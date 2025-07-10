@@ -11,11 +11,20 @@ export class CodeRepository implements ICodeRepository {
   async getUrl(
     userId: string,
     page: number = 1,
-    limit: number = 5
+    limit: number = 5,
+    search: string = ""
   ): Promise<{ urls: TCode[]; total: number }> {
     const skip = (page - 1) * limit;
-    const urls = await codeModel.find({ userId }).sort({createdAt:-1}).skip(skip).limit(limit);
-    const total = await codeModel.countDocuments({ userId });
+    const query: any = { userId };
+    if (search) {
+      query.shortCode = { $regex: search, $options: "i" };
+    }
+    const urls = await codeModel
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    const total = await codeModel.countDocuments(query);
     return { urls, total };
   }
 
